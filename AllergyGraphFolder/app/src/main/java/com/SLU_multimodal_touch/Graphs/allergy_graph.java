@@ -24,6 +24,8 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import android.media.SoundPool;
+import android.media.AudioManager;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -65,6 +67,16 @@ public class allergy_graph extends AppCompatActivity {
     int categoryTwo_green = 125;
     int categoryTwo_blue = 49;
 
+    // Define area colors for bar 1
+    int barOne_red = 0;
+    int barOne_green = 32;
+    int barOne_blue = 96;
+
+    // Define area colors for bar 2
+    int barTwo_red = 197;
+    int barTwo_green = 90;
+    int barTwo_blue = 17;
+
     // For Vibration Control
     VibrationManager vib = new VibrationManager();
     int vib_freq = 0;
@@ -73,7 +85,7 @@ public class allergy_graph extends AppCompatActivity {
 
     // Define variables to track tts control 
     boolean hasSpoken = false;
-    String textToSpeak = " ";
+    boolean textSpoken = false;
 
 
 
@@ -84,28 +96,28 @@ public class allergy_graph extends AppCompatActivity {
     int f3_index = -1;
     int f4_index = -1;
 
-    /*
+
     // For SoundPool control
 
     private SoundPool soundPool;
-    private int empty_sound_id;
-    private int empty_sound_stream_id;
+    //private int empty_sound_id;
+    //private int empty_sound_stream_id;
 
-    private int bells_sound_id;
-    private int bells_sound_stream_id;
-    private int healing_sound_id;
-    private int healing_sound_stream_id;
+    private int bike_bell_id;
+    private int bike_bell_stream_id;
+    //private int healing_sound_id;
+    //private int healing_sound_stream_id;
     int priority;
     int loop = -1; // Loop forever
     int bells_loop = 0; // loop twice
-    int healing_loop = 2; // loop twice
+    //int healing_loop = 2; // loop twice
 
-    private Boolean empty_sound_is_playing = false;
-    private Boolean bells_sound_is_playing = false;
-    private Boolean healing_sound_is_playing = false;
-    private Boolean spatial_audio_activated = false;
+    //private Boolean empty_sound_is_playing = false;
+    private Boolean bike_bell_is_playing = false;
+    //private Boolean healing_sound_is_playing = false;
+    //private Boolean spatial_audio_activated = false;
     float pitch_threshold = (float) 0.01;
-    */
+
 
     // For Logging Info
     int logger_delay = 100; //Logger Delay in ms
@@ -297,6 +309,7 @@ public class allergy_graph extends AppCompatActivity {
             public boolean onPinch(int fingers, long gestureDuration, double gestureDistance) {
                 if (fingers == 2) {
                     // Write your code here for PINCHING with 2 fingers
+                    tts.stop();
                 }
                 else if (fingers == 3) {
                     // Write your code here for PINCHING with 3 fingers
@@ -325,9 +338,23 @@ public class allergy_graph extends AppCompatActivity {
             @Override
             public boolean onDoubleTap(int fingers) {
                 // Write your code here for DOUBLE TAPPING
+
+                /*
+                // Get the pixel based on the IMAGE X and Y coordinates!
+                int pixel1 = image.getPixel((int)imageX1, (int)imageY1);
+                // Save the RGB values
+                int pixel1_red = Color.red(pixel1);
+                int pixel1_green = Color.green(pixel1);
+                int pixel1_blue = Color.blue(pixel1);
+
+                if (pixel_red == barOne_red && pixel_green == barOne_green && pixel_blue == barOne_blue) {
+                    tts.speak("End of Allergy A", TextToSpeech.QUEUE_FLUSH, null);
+                }
+                 */
+                //tts.speak("End of Allergy", TextToSpeech.QUEUE_FLUSH, null);
+
                 return false;
             }
-
         });
 
         // Set the OnTouch (no TalkBack) and onHover (with TalkBack) listeners
@@ -361,13 +388,13 @@ public class allergy_graph extends AppCompatActivity {
          * SOUNDPOOL CONFIGURATION
          **************************************************************************************/
         // Give each of the raw files an ID to be used by the SoundPool later on
-        /*soundPool = new SoundPool(10,AudioManager.STREAM_MUSIC, 0);
-        empty_sound_id = soundPool.load(this, R.raw.waves_trim, 1);
+        soundPool = new SoundPool(10,AudioManager.STREAM_MUSIC, 0);
+        //empty_sound_id = soundPool.load(this, R.raw.waves_trim, 1);
 
-        bells_sound_id = soundPool.load(this, R.raw.bells_sound, 1);
-        healing_sound_id = soundPool.load(this, R.raw.healing_sound, 1);
+        bike_bell_id = soundPool.load(this, R.raw.bike_bell, 1);
+        //healing_sound_id = soundPool.load(this, R.raw.healing_sound, 1);
 
-         */
+
 
         // Write your constantly running code here
         handler.post(new Runnable() {
@@ -376,12 +403,14 @@ public class allergy_graph extends AppCompatActivity {
                 // Your constantly running code here:
 
                 // get percentage of screen
-                float X_screenPercent = (float) (sfg.X_coords[0]/screen_width);
-                float Y_screenPercent = (float) (sfg.Y_coords[0]/screen_height);
+                //float X_screenPercent = (float) (sfg.X_coords[0]/screen_width);
+                //float Y_screenPercent = (float) (sfg.Y_coords[0]/screen_height);
+
+
 
                 // Finger status/location indicator
                 //coord_view.setText("There are " + sfg.finger_count + " finger(s) on screen.\nTheir X coordinates are " + Arrays.toString(sfg.X_coords) + "\nTheir Y coordinates are " + Arrays.toString(sfg.Y_coords));
-                coord_view.setText("Their X percentages are " + X_screenPercent + "\nTheir Y percentages are " + Y_screenPercent);
+                //coord_view.setText("Their X percentages are " + X_screenPercent + "\nTheir Y percentages are " + Y_screenPercent);
 
 
                 /**************************************************************************************
@@ -421,19 +450,21 @@ public class allergy_graph extends AppCompatActivity {
 
                     hasSpoken = false;
 
-                    /*
+
                     // SoundPool
-                    soundPool.stop(empty_sound_stream_id);
-                    empty_sound_is_playing = false;
+                    //soundPool.stop(empty_sound_stream_id);
+                    //empty_sound_is_playing = false;
 
                     // stop bells sounds
-                    soundPool.stop(bells_sound_stream_id);
-                    bells_sound_is_playing = false;
+                    soundPool.stop(bike_bell_stream_id);
+                    bike_bell_is_playing = false;
 
                     // stop healing sounds
-                    soundPool.stop(healing_sound_stream_id);
-                    healing_sound_is_playing = false;
-                     */
+                    //soundPool.stop(healing_sound_stream_id);
+                    //healing_sound_is_playing = false;
+
+                    bike_bell_is_playing = false;
+
                 }
 
                 /**************************************************************************************
@@ -507,14 +538,102 @@ public class allergy_graph extends AppCompatActivity {
 
                          */
 
+                        // get percentage of screen
+                        float X_screenPercent = (float) (imageX/imageWidth);
+                        float Y_screenPercent = (float) (imageY/imageHeight);
+
+                        coord_view.setText("Their X percentages are " + X_screenPercent + "\nTheir Y percentages are " + Y_screenPercent);
+
+                        // setting text to speech for allergy_graph
+                        if (X_screenPercent > 0.28 && X_screenPercent < 0.70 && Y_screenPercent < 0.06 && Y_screenPercent > 0.02){
+                            if (!hasSpoken) {
+                                tts.speak("Title: Allergy A and Allergy B in Three Seasons! A health organization wanted to look at the spread of 2 allergies in three season. The following stacked bar chart shows the number of people with the two allergies in the three seasons. Use this graph below to answer the questions.", TextToSpeech.QUEUE_FLUSH, null);
+                                hasSpoken = true;
+                            }
+                        } else if (X_screenPercent > 0.02 && X_screenPercent < 0.04 && Y_screenPercent < 0.57 && Y_screenPercent > 0.40){
+                            if (!hasSpoken) {
+                                tts.speak("Y-axis title: Allergies", TextToSpeech.QUEUE_FLUSH, null);
+                                hasSpoken = true;
+                            }
+                        } else if (X_screenPercent > 0.48 && X_screenPercent < 0.56 && Y_screenPercent < 0.98 && Y_screenPercent > 0.94){
+                            if (!hasSpoken) {
+                                tts.speak("X-axis title: Seasons", TextToSpeech.QUEUE_FLUSH, null);
+                                hasSpoken = true;
+                            }
+                        } else if (X_screenPercent > 0.17 && X_screenPercent < 0.26 && Y_screenPercent < 0.93 && Y_screenPercent > 0.89){
+                            if (!hasSpoken) {
+                                tts.speak("Summer", TextToSpeech.QUEUE_FLUSH, null);
+                                hasSpoken = true;
+                            }
+                        } else if (X_screenPercent > 0.48 && X_screenPercent < 0.55 && Y_screenPercent < 0.93 && Y_screenPercent > 0.89){
+                            if (!hasSpoken) {
+                                tts.speak("Spring", TextToSpeech.QUEUE_FLUSH, null);
+                                hasSpoken = true;
+                            }
+                        } else if (X_screenPercent > 0.78 && X_screenPercent < 0.82 && Y_screenPercent < 0.92 && Y_screenPercent > 0.88){
+                            if (!hasSpoken) {
+                                tts.speak("Fall", TextToSpeech.QUEUE_FLUSH, null);
+                                hasSpoken = true;
+                            }
+                        } else if (X_screenPercent > 0.04 && X_screenPercent < 0.98 && Y_screenPercent < 0.88 && Y_screenPercent > 0.86){
+                            if (!hasSpoken) {
+                                tts.speak("0", TextToSpeech.QUEUE_FLUSH, null);
+                                hasSpoken = true;
+                            }
+                        } else if (X_screenPercent > 0.04 && X_screenPercent < 0.98 && Y_screenPercent < 0.79 && Y_screenPercent > 0.76){
+                            if (!hasSpoken) {
+                                tts.speak("10", TextToSpeech.QUEUE_FLUSH, null);
+                                hasSpoken = true;
+                            }
+                        } else if (X_screenPercent > 0.04 && X_screenPercent < 0.98 && Y_screenPercent < 0.69 && Y_screenPercent > 0.66){
+                            if (!hasSpoken) {
+                                tts.speak("20", TextToSpeech.QUEUE_FLUSH, null);
+                                hasSpoken = true;
+                            }
+                        } else if (X_screenPercent > 0.04 && X_screenPercent < 0.98 && Y_screenPercent < 0.58 && Y_screenPercent > 0.57){
+                            if (!hasSpoken) {
+                                tts.speak("30", TextToSpeech.QUEUE_FLUSH, null);
+                                hasSpoken = true;
+                            }
+                        } else if (X_screenPercent > 0.04 && X_screenPercent < 0.98 && Y_screenPercent < 0.50 && Y_screenPercent > 0.47){
+                            if (!hasSpoken) {
+                                tts.speak("40", TextToSpeech.QUEUE_FLUSH, null);
+                                hasSpoken = true;
+                            }
+                        } else if (X_screenPercent > 0.04 && X_screenPercent < 0.98 && Y_screenPercent < 0.39 && Y_screenPercent > 0.38){
+                            if (!hasSpoken) {
+                                tts.speak("50", TextToSpeech.QUEUE_FLUSH, null);
+                                hasSpoken = true;
+                            }
+                        } else if (X_screenPercent > 0.04 && X_screenPercent < 0.98 && Y_screenPercent < 0.29 && Y_screenPercent > 0.28){
+                            if (!hasSpoken) {
+                                tts.speak("60", TextToSpeech.QUEUE_FLUSH, null);
+                                hasSpoken = true;
+                            }
+                        } else if (X_screenPercent > 0.04 && X_screenPercent < 0.98 && Y_screenPercent < 0.19 && Y_screenPercent > 0.18){
+                            if (!hasSpoken) {
+                                tts.speak("70", TextToSpeech.QUEUE_FLUSH, null);
+                                hasSpoken = true;
+                            }
+                        } else if (X_screenPercent > 0.04 && X_screenPercent < 0.98 && Y_screenPercent < 0.10 && Y_screenPercent > 0.09){
+                            if (!hasSpoken) {
+                                tts.speak("80", TextToSpeech.QUEUE_FLUSH, null);
+                                hasSpoken = true;
+                            }
+                        }
+                        else {
+                            hasSpoken = false;
+                        }
+
+
                         // If finger is INSIDE the figure
                         if (pixel_red == categoryOne_red && pixel_green == categoryOne_green && pixel_blue == categoryOne_blue) {
                             // Stop all other sounds
                             /*soundPool.stop(empty_sound_stream_id);
                             empty_sound_is_playing = false;
 
-                            soundPool.stop(bells_sound_stream_id);
-                            bells_sound_is_playing = false;
+                            soundPool.stop(bike_bell_stream_id);
+                            bike_bell_is_playing = false;
 
 
 
@@ -538,7 +657,7 @@ public class allergy_graph extends AppCompatActivity {
                             // Start vibrating
                             if (vib_freq != vib_freq_category_one) {
                                 // Stop the previous vibration if it is different from the one we are supposed to do
-                                tts.speak("Allergy A", TextToSpeech.QUEUE_FLUSH, null);
+                                tts.speak("Allergy A", TextToSpeech.QUEUE_ADD, null);
                                 vib.stop();
                                 // Update the vibration frequency
                                 vib_freq = vib_freq_category_one;
@@ -548,9 +667,38 @@ public class allergy_graph extends AppCompatActivity {
                                 vib.vibrateAtFrequencyForever(vib_freq);
                                 //vib.vibrateForever();
                             }
+                            bike_bell_is_playing = false;
 
                             //coord_view.setText("Allergy A");
 
+                        }
+
+                        // If finger is INSIDE TOP BAR ONE
+                        else if (pixel_red == barOne_red && pixel_green == barOne_green && pixel_blue == barOne_blue) {
+                            // Stop all other sounds
+                            /*
+                            soundPool.stop(empty_sound_stream_id);
+                            empty_sound_is_playing = false;
+
+                            soundPool.stop(healing_sound_stream_id);
+                            healing_sound_is_playing = false;
+                             */
+
+                            coord_view.setText("TOP BAR ONE FOUND");
+
+                            // play sound on top bar
+                            if (!bike_bell_is_playing) {
+                                // Start playing the sound at normal pitch, from both speakers
+                                bike_bell_stream_id = soundPool.play(bike_bell_id, (float) 1.0, (float) 1.0, priority, bells_loop, (float) 1.0);
+                                bike_bell_is_playing = true;
+                            }
+
+                            tts.speak("End of Allergy A", TextToSpeech.QUEUE_FLUSH, null);
+
+                            // Start vibrating
+                            //if (!vib.isVibrating()) {
+                                //vib.vibrateForever();
+                            //}
                         }
 
                         // If finger is INSIDE Category two
@@ -568,22 +716,22 @@ public class allergy_graph extends AppCompatActivity {
 
                             /*
                             // play sound on top bar
-                            if (!bells_sound_is_playing) {
+                            if (!bike_bell_is_playing) {
                                 if (!spatial_audio_activated) {
                                     // Start playing the sound at normal pitch, from both speakers
-                                    bells_sound_stream_id = soundPool.play(bells_sound_id, (float) 1.0, (float) 1.0, priority, bells_loop, (float) 1.0);
+                                    bike_bell_stream_id = soundPool.play(bike_bell_id, (float) 1.0, (float) 1.0, priority, bells_loop, (float) 1.0);
                                 }
                                 else {
                                     // Start playing the sound at normal pitch, from both speakers
-                                    bells_sound_stream_id = soundPool.play(bells_sound_id, leftVolume, rightVolume, priority, bells_loop, pitch);
+                                    bike_bell_stream_id = soundPool.play(bike_bell_id, leftVolume, rightVolume, priority, bells_loop, pitch);
                                 }
-                                bells_sound_is_playing = true;
+                                bike_bell_is_playing = true;
                             }
                             // SPATIAL AUDIO constant modification
                             if (spatial_audio_activated) {
-                                soundPool.setLoop(bells_sound_stream_id, bells_loop);
-                                soundPool.setVolume(bells_sound_stream_id, leftVolume, rightVolume);
-                                soundPool.setRate(bells_sound_stream_id, pitch);
+                                soundPool.setLoop(bike_bell_stream_id, bells_loop);
+                                soundPool.setVolume(bike_bell_stream_id, leftVolume, rightVolume);
+                                soundPool.setRate(bike_bell_stream_id, pitch);
                             }
 
                              */
@@ -595,7 +743,7 @@ public class allergy_graph extends AppCompatActivity {
                                 // Stop the previous vibration if it is different from the one we are supposed to do
                                 vib.stop();
                                 // Update the vibration frequency
-                                tts.speak("Allergy B", TextToSpeech.QUEUE_FLUSH, null);
+                                tts.speak("Allergy B", TextToSpeech.QUEUE_ADD, null);
                                 vib_freq = vib_freq_category_two;
                                 // This only happens ONCE when the vibration frequency CHANGES value, to avoid the motor having to STOPGOSTOPGOSTOPGOSTOPGO
                             }
@@ -603,6 +751,35 @@ public class allergy_graph extends AppCompatActivity {
                                 vib.vibrateAtFrequencyForever(vib_freq);
                                 //vib.vibrateForever();
                             }
+                            bike_bell_is_playing = false;
+                        }
+
+                        // If finger is INSIDE TOP BAR TWO
+                        else if (pixel_red == barTwo_red && pixel_green == barTwo_green && pixel_blue == barTwo_blue) {
+                            // Stop all other sounds
+                            /*
+                            soundPool.stop(empty_sound_stream_id);
+                            empty_sound_is_playing = false;
+
+                            soundPool.stop(healing_sound_stream_id);
+                            healing_sound_is_playing = false;
+                             */
+
+                            //coord_view.setText("TOP BAR TWO FOUND");
+
+                            // play sound on top bar
+                            if (!bike_bell_is_playing) {
+                                // Start playing the sound at normal pitch, from both speakers
+                                bike_bell_stream_id = soundPool.play(bike_bell_id, (float) 1.0, (float) 1.0, priority, bells_loop, (float) 1.0);
+                                bike_bell_is_playing = true;
+                            }
+
+                            tts.speak("End of Allergy B", TextToSpeech.QUEUE_FLUSH, null);
+
+                            // Start vibrating
+                            //if (!vib.isVibrating()) {
+                                //vib.vibrateForever();
+                            //}
                         }
 
 
@@ -635,90 +812,15 @@ public class allergy_graph extends AppCompatActivity {
                             //coord_view.setText("");
                             /*
                             // stop bells sounds
-                            soundPool.stop(bells_sound_stream_id);
-                            bells_sound_is_playing = false;
+                            soundPool.stop(bike_bell_stream_id);
+                            bike_bell_is_playing = false;
 
                             // stop healing sounds
                             soundPool.stop(healing_sound_stream_id);
                             healing_sound_is_playing = false;
 
                              */
-                        }
-
-                        // setting text to speech for allergy_graph
-                        if (X_screenPercent > 0.23 && X_screenPercent < 0.76 && Y_screenPercent < 0.08 && Y_screenPercent > 0.02){
-                            if (!hasSpoken) {
-                                tts.speak("Title: Allergy A and Allergy B in Three Seasons!", TextToSpeech.QUEUE_FLUSH, null);
-                                hasSpoken = true;
-                            }
-                        } else if (X_screenPercent > 0.02 && X_screenPercent < 0.05 && Y_screenPercent < 0.65 && Y_screenPercent > 0.29){
-                            if (!hasSpoken) {
-                                tts.speak("Y-axis title: Allergy Ratings", TextToSpeech.QUEUE_FLUSH, null);
-                                hasSpoken = true;
-                            }
-                        } else if (X_screenPercent > 0.49 && X_screenPercent < 0.61 && Y_screenPercent < 0.95 && Y_screenPercent > 0.90){
-                            if (!hasSpoken) {
-                                tts.speak("X-axis title: Seasons", TextToSpeech.QUEUE_FLUSH, null);
-                                hasSpoken = true;
-                            }
-                        } else if (X_screenPercent > 0.23 && X_screenPercent < 0.33 && Y_screenPercent < 0.87 && Y_screenPercent > 0.83){
-                            if (!hasSpoken) {
-                                tts.speak("X-axis: Summer", TextToSpeech.QUEUE_FLUSH, null);
-                                hasSpoken = true;
-                            }
-                        } else if (X_screenPercent > 0.51 && X_screenPercent < 0.59 && Y_screenPercent < 0.87 && Y_screenPercent > 0.82){
-                            if (!hasSpoken) {
-                                tts.speak("X-axis: Spring", TextToSpeech.QUEUE_FLUSH, null);
-                                hasSpoken = true;
-                            }
-                        } else if (X_screenPercent > 0.81 && X_screenPercent < 0.86 && Y_screenPercent < 0.87 && Y_screenPercent > 0.83){
-                            if (!hasSpoken) {
-                                tts.speak("X-axis: Fall", TextToSpeech.QUEUE_FLUSH, null);
-                                hasSpoken = true;
-                            }
-                        } else if (X_screenPercent > 0.13 && X_screenPercent < 0.98 && Y_screenPercent < 0.80 && Y_screenPercent > 0.79){
-                            if (!hasSpoken) {
-                                tts.speak("Y-axis: 0", TextToSpeech.QUEUE_FLUSH, null);
-                                hasSpoken = true;
-                            }
-                        } else if (X_screenPercent > 0.13 && X_screenPercent < 0.98 && Y_screenPercent < 0.71 && Y_screenPercent > 0.70){
-                            if (!hasSpoken) {
-                                tts.speak("Y-axis: 20", TextToSpeech.QUEUE_FLUSH, null);
-                                hasSpoken = true;
-                            }
-                        } else if (X_screenPercent > 0.13 && X_screenPercent < 0.98 && Y_screenPercent < 0.61 && Y_screenPercent > 0.60){
-                            if (!hasSpoken) {
-                                tts.speak("Y-axis: 40", TextToSpeech.QUEUE_FLUSH, null);
-                                hasSpoken = true;
-                            }
-                        } else if (X_screenPercent > 0.13 && X_screenPercent < 0.98 && Y_screenPercent < 0.51 && Y_screenPercent > 0.50){
-                            if (!hasSpoken) {
-                                tts.speak("Y-axis: 60", TextToSpeech.QUEUE_FLUSH, null);
-                                hasSpoken = true;
-                            }
-                        } else if (X_screenPercent > 0.13 && X_screenPercent < 0.98 && Y_screenPercent < 0.42 && Y_screenPercent > 0.41){
-                            if (!hasSpoken) {
-                                tts.speak("Y-axis: 80", TextToSpeech.QUEUE_FLUSH, null);
-                                hasSpoken = true;
-                            }
-                        } else if (X_screenPercent > 0.13 && X_screenPercent < 0.98 && Y_screenPercent < 0.32 && Y_screenPercent > 0.31){
-                            if (!hasSpoken) {
-                                tts.speak("Y-axis: 100", TextToSpeech.QUEUE_FLUSH, null);
-                                hasSpoken = true;
-                            }
-                        } else if (X_screenPercent > 0.13 && X_screenPercent < 0.98 && Y_screenPercent < 0.23 && Y_screenPercent > 0.22){
-                            if (!hasSpoken) {
-                                tts.speak("Y-axis: 120", TextToSpeech.QUEUE_FLUSH, null);
-                                hasSpoken = true;
-                            }
-                        } else if (X_screenPercent > 0.13 && X_screenPercent < 0.98 && Y_screenPercent < 0.13 && Y_screenPercent > 0.12){
-                            if (!hasSpoken) {
-                                tts.speak("Y-axis: 140", TextToSpeech.QUEUE_FLUSH, null);
-                                hasSpoken = true;
-                            }
-                        }
-                        else {
-                            hasSpoken = false;
+                            bike_bell_is_playing = false;
                         }
                     }
                 }

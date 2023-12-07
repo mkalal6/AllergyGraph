@@ -522,6 +522,43 @@ public class histo_15_normal extends AppCompatActivity {
                             coord_view.setText("");
                         }
 
+                        // If finger is INSIDE TOP BAR ONE
+                        else if (pixel_red == top_bar_red && pixel_green == top_bar_green && pixel_blue == top_bar_blue) {
+                            // Stop all other sounds
+                            soundPool.stop(empty_sound_stream_id);
+                            empty_sound_is_playing = false;
+
+                            soundPool.stop(healing_sound_stream_id);
+                            healing_sound_is_playing = false;
+
+                            coord_view.setText("TOP BAR FOUND");
+
+                            // play sound on top bar
+                            if (!bells_sound_is_playing) {
+                                if (!spatial_audio_activated) {
+                                    // Start playing the sound at normal pitch, from both speakers
+                                    bells_sound_stream_id = soundPool.play(bells_sound_id, (float) 1.0, (float) 1.0, priority, bells_loop, (float) 1.0);
+                                }
+                                else {
+                                    // Start playing the sound at normal pitch, from both speakers
+                                    bells_sound_stream_id = soundPool.play(bells_sound_id, leftVolume, rightVolume, priority, bells_loop, pitch);
+                                }
+                                bells_sound_is_playing = true;
+                            }
+                            // SPATIAL AUDIO constant modification
+                            if (spatial_audio_activated) {
+                                soundPool.setLoop(bells_sound_stream_id, bells_loop);
+                                soundPool.setVolume(bells_sound_stream_id, leftVolume, rightVolume);
+                                soundPool.setRate(bells_sound_stream_id, pitch);
+                            }
+
+
+                            // Start vibrating
+                            if (!vib.isVibrating()) {
+                                vib.vibrateForever();
+                            }
+                        }
+
                         // If finger is INSIDE TOP BAR
                         else if (pixel_red == top_bar_red && pixel_green == top_bar_green && pixel_blue == top_bar_blue) {
                             // Stop all other sounds
