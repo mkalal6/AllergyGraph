@@ -690,10 +690,11 @@ public class allergy_graph extends AppCompatActivity {
                             if (!bike_bell_is_playing) {
                                 // Start playing the sound at normal pitch, from both speakers
                                 bike_bell_stream_id = soundPool.play(bike_bell_id, (float) 1.0, (float) 1.0, priority, bells_loop, (float) 1.0);
+                                tts.speak("End of Allergy A", TextToSpeech.QUEUE_ADD, null);
                                 bike_bell_is_playing = true;
                             }
 
-                            tts.speak("End of Allergy A", TextToSpeech.QUEUE_FLUSH, null);
+
 
                             // Start vibrating
                             //if (!vib.isVibrating()) {
